@@ -2,6 +2,79 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
 
+var game;
+const SPEED = 120.0;
+const ComponentSize = 40.0;
+main() async {
+  Flame.images.loadAll(['fire.png', 'dragon.png', 'gun.png', 'bullet.png']);
+  var dimensions = await Flame.util.initialDimensions();
+game = MyGame(dimensions);
+  runApp(MaterialApp(
+      home: Scaffold(
+    body: Container(
+      decoration: new BoxDecoration(
+        image: new DecorationImage(
+          image: new AssetImage("assets/images/background.jpg"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: GameWrapper(game),
+    ),
+  )));
+}
+class GameWrapper extends StatelessWidget {
+  final MyGame game;
+  GameWrapper(this.game);
+@override
+  Widget build(BuildContext context) {
+    return game.widget;
+  }
+}
+Component component;
+class MyGame extends BaseGame {
+  Size dimensions;
+  MyGame(this.dimensions);
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    String text = "Score: 0";
+    TextPainter textPainter =
+        Flame.util.text(text, color: Colors.white, fontSize: 48.0);
+    textPainter.paint(canvas, Offset(size.width / 4.5, size.height - 50));
+  }
+double creationTimer = 0.0;
+  @override
+  void update(double t) {
+    creationTimer += t;
+    if (creationTimer >= 4) {
+      creationTimer = 0.0;
+      component = new Component(dimensions);
+      add(component);
+    }
+    super.update(t);
+  }
+}
+class Component extends SpriteComponent {
+  Size dimensions;
+  Component(this.dimensions) : super.square(ComponentSize, 'dragon.png');
+  double maxY;
+  bool remove = false;
+  @override
+  void update(double t) {
+    y += t * SPEED;
+  }
+@override
+  bool destroy() {
+    return remove;
+  }
+@override
+  void resize(Size size) {
+    this.x = size.width / 2;
+    this.y = 0;
+    this.maxY = size.height;
+  }
+}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
